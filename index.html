@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bibliotrack">
+<meta name="theme-color" content="#3D1F0D">
+<title>Bibliotrack</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.svg">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --espresso: #1C0A04;
+  --caoba: #3D1F0D;
+  --cedro: #6B3520;
+  --cobre: #A0612F;
+  --miel: #C89B72;
+  --pergamino: #E8D5BF;
+  --crema: #FAF3EC;
+  --rosa-pet: #E8A4AA;
+  --rosa-ant: #C4626A;
+  --rosa-vino: #9B3340;
+  --rosa-claro: #FFD6DA;
+  --text-main: #1C0A04;
+  --text-mid: #6B3520;
+  --text-soft: #A0612F;
+  --text-hint: #C89B72;
+  --border: rgba(61,31,13,0.15);
+  --border-mid: rgba(61,31,13,0.25);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; background: var(--caoba); }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--crema);
+  color: var(--text-main);
+  display: flex;
+  flex-direction: column;
+  max-width: 430px;
+  margin: 0 auto;
+  height: 100%;
+  position: relative;
+}
+
+/* ── Status bar area ── */
+.status-bar-fill {
+  background: var(--caoba);
+  height: var(--safe-top);
+  flex-shrink: 0;
+}
+
+/* ── Top header ── */
+.topbar {
+  background: var(--caoba);
+  padding: 14px 20px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.topbar-logo {
+  font-family: 'Lora', serif;
+  font-size: 22px;
+  color: var(--crema);
+  letter-spacing: -0.3px;
+}
+.topbar-logo span { color: var(--rosa-pet); }
+.topbar-actions { display: flex; gap: 10px; }
+.icon-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--crema);
+  font-size: 18px;
+  transition: background 0.15s;
+}
+.icon-btn:active { background: rgba(255,255,255,0.2); }
+
+/* ── Stats strip ── */
+.stats-strip {
+  background: var(--caoba);
+  padding: 0 20px 16px;
+  display: flex;
+  gap: 0;
+  flex-shrink: 0;
+}
+.stat-pill {
+  flex: 1;
+  text-align: center;
+  border-right: 1px solid rgba(255,255,255,0.12);
+}
+.stat-pill:last-child { border-right: none; }
+.stat-num {
+  font-family: 'Lora', serif;
+  font-size: 20px;
+  color: var(--crema);
+  font-weight: 600;
+  line-height: 1;
+}
+.stat-lbl {
+  font-size: 10px;
+  color: var(--rosa-pet);
+  margin-top: 3px;
+  letter-spacing: 0.04em;
+}
+
+/* ── Tab bar ── */
+.tabbar {
+  background: var(--crema);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-shrink: 0;
+  padding: 0 4px;
+}
+.tab {
+  flex: 1;
+  padding: 10px 4px 9px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-hint);
+  text-align: center;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.tab.active { color: var(--rosa-ant); border-bottom-color: var(--rosa-ant); }
+
+/* ── Scrollable content ── */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--crema);
+}
+
+/* ── Book grid ── */
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  padding: 16px;
+}
+
+.book-card {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.book-thumb {
+  width: 100%;
+  aspect-ratio: 2/3;
+  border-radius: 8px;
+  margin-bottom: 7px;
+  position: relative;
+  overflow: hidden;
+  border: 0.5px solid var(--border);
+  display: flex;
+  align-items: flex-end;
+  transition: transform 0.15s;
+}
+.book-card:active .book-thumb { transform: scale(0.97); }
+.book-thumb img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+.book-thumb-fallback {
+  position: absolute; inset: 0;
+  display: flex; align-items: flex-end;
+  padding: 6px;
+}
+.book-thumb-title {
+  font-family: 'Lora', serif;
+  font-size: 9px;
+  line-height: 1.3;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+.score-pip {
+  position: absolute; top: 5px; right: 5px;
+  background: rgba(28,10,4,0.6);
+  color: var(--rosa-claro);
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 5px;
+  border-radius: 99px;
+  display: flex; align-items: center; gap: 2px;
+  backdrop-filter: blur(4px);
+}
+.status-pip {
+  position: absolute; top: 5px; left: 5px;
+  width: 7px; height: 7px; border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.6);
+}
+.progress-mini {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 3px;
+}
+.progress-mini-fill { height: 100%; }
+
+.book-name {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-main);
+  line-height: 1.3;
+  margin-bottom: 2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.book-auth { font-size: 10px; color: var(--text-soft); }
+
+/* ── Empty state ── */
+.empty {
+  padding: 48px 24px;
+  text-align: center;
+}
+.empty-icon { font-size: 48px; margin-bottom: 12px; display: block; }
+.empty-title { font-family: 'Lora', serif; font-size: 18px; color: var(--text-main); margin-bottom: 6px; }
+.empty-sub { font-size: 13px; color: var(--text-soft); line-height: 1.5; }
+
+/* ── Bottom nav ── */
+.bottomnav {
+  background: var(--caoba);
+  display: flex;
+  padding-bottom: var(--safe-bottom);
+  flex-shrink: 0;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 4px 8px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: rgba(250,243,236,0.45);
+  font-size: 10px;
+  gap: 4px;
+  transition: color 0.15s;
+}
+.nav-btn.active { color: var(--rosa-pet); }
+.nav-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── Search overlay ── */
+.search-overlay {
+  position: fixed; inset: 0;
+  background: var(--crema);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+}
+.search-overlay.open { transform: translateY(0); }
+.search-header {
+  background: var(--caoba);
+  padding: calc(var(--safe-top) + 14px) 16px 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.search-input-wrap {
+  flex: 1;
+  background: rgba(255,255,255,0.12);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+}
+.search-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--crema);
+  font-size: 16px;
+  font-family: 'Inter', sans-serif;
+  padding: 10px 0;
+  caret-color: var(--rosa-pet);
+}
+.search-input::placeholder { color: rgba(250,243,236,0.45); }
+.search-cancel {
+  background: none; border: none;
+  color: var(--rosa-pet);
+  font-size: 14px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  padding: 4px;
+  white-space: nowrap;
+}
+.search-results { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.search-hint {
+  padding: 32px 24px;
+  text-align: center;
+  color: var(--text-soft);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.search-result-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.search-result-item:active { background: var(--pergamino); }
+.search-result-cover {
+  width: 44px; height: 66px;
+  border-radius: 5px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 0.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.search-result-cover img { width: 100%; height: 100%; object-fit: cover; }
+.search-result-info { flex: 1; min-width: 0; }
+.search-result-title {
+  font-size: 14px; font-weight: 500; color: var(--text-main);
+  margin-bottom: 2px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.search-result-author { font-size: 12px; color: var(--text-soft); margin-bottom: 4px; }
+.search-result-meta { font-size: 11px; color: var(--text-hint); }
+.search-add-btn {
+  align-self: center;
+  background: var(--rosa-ant);
+  border: none;
+  color: white;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 99px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: 'Inter', sans-serif;
+}
+.search-add-btn.added { background: var(--miel); color: var(--caoba); }
+.loading-dots { text-align: center; padding: 32px; color: var(--text-soft); font-size: 14px; }
+
+/* ── Detail overlay ── */
+.detail-overlay {
+  position: fixed; inset: 0;
+  background: var(--crema);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+  overflow: hidden;
+}
+.detail-overlay.open { transform: translateX(0); }
+.detail-header {
+  background: var(--caoba);
+  padding: calc(var(--safe-top) + 14px) 16px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.back-btn {
+  background: none; border: none;
+  color: var(--rosa-pet);
+  font-size: 22px;
+  cursor: pointer;
+  padding: 2px;
+  display: flex; align-items: center;
+}
+.detail-header-title {
+  font-family: 'Lora', serif;
+  font-size: 16px; font-weight: 600;
+  color: var(--crema);
+  flex: 1;
+  display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
+}
+.detail-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.detail-hero {
+  display: flex;
+  gap: 16px;
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--pergamino);
+}
+.detail-cover-wrap {
+  width: 90px; height: 135px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 0.5px solid var(--border-mid);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px;
+}
+.detail-cover-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.detail-info { flex: 1; min-width: 0; }
+.detail-title {
+  font-family: 'Lora', serif;
+  font-size: 17px; font-weight: 600;
+  color: var(--text-main);
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+.detail-author { font-size: 13px; color: var(--text-mid); margin-bottom: 10px; }
+.detail-metas { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.meta-tag {
+  font-size: 11px;
+  background: rgba(61,31,13,0.1);
+  color: var(--cedro);
+  padding: 3px 8px;
+  border-radius: 99px;
+}
+.detail-section { padding: 16px; border-bottom: 1px solid var(--border); }
+.section-lbl {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-hint);
+  margin-bottom: 10px;
+}
+.status-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.s-chip {
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 99px;
+  border: 1px solid var(--border-mid);
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+.s-chip.sel-leyendo { background: #E6F1FB; border-color: #378ADD; color: #0C447C; }
+.s-chip.sel-leido { background: #EAF3DE; border-color: #639922; color: #27500A; }
+.s-chip.sel-pendiente { background: #FAEEDA; border-color: #BA7517; color: #633806; }
+.s-chip.sel-abandonado { background: #FCEBEB; border-color: #E24B4A; color: #791F1F; }
+
+.stars-row { display: flex; align-items: center; gap: 4px; }
+.star {
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--pergamino);
+  transition: color 0.1s;
+  line-height: 1;
+}
+.star.on { color: var(--rosa-ant); }
+.star-label { font-size: 13px; color: var(--text-soft); margin-left: 6px; }
+
+.progress-section { background: var(--pergamino); border-radius: 12px; padding: 14px; }
+.progress-nums { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.progress-big { font-family: 'Lora', serif; font-size: 26px; font-weight: 600; color: var(--text-main); }
+.progress-pct { font-size: 13px; font-weight: 500; color: var(--rosa-ant); }
+.progress-bar { background: var(--miel); border-radius: 99px; height: 6px; margin-bottom: 6px; }
+.progress-fill { height: 6px; border-radius: 99px; background: var(--rosa-ant); transition: width 0.4s ease; }
+.progress-rest { font-size: 11px; color: var(--text-hint); }
+.page-input-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+.page-input {
+  flex: 1;
+  background: white;
+  border: 1px solid var(--border-mid);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 15px;
+  font-family: 'Inter', sans-serif;
+  color: var(--text-main);
+  outline: none;
+}
+.page-input:focus { border-color: var(--rosa-ant); }
+.page-save-btn {
+  background: var(--rosa-ant);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+
+.notes-input {
+  width: 100%;
+  background: var(--pergamino);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: 'Lora', serif;
+  font-style: italic;
+  color: var(--text-main);
+  resize: none;
+  min-height: 100px;
+  outline: none;
+  line-height: 1.6;
+}
+.notes-input:focus { border-color: var(--rosa-ant); }
+.notes-save { margin-top: 8px; font-size: 12px; color: var(--rosa-ant); cursor: pointer; text-align: right; }
+
+.synopsis-text {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-mid);
+  font-family: 'Lora', serif;
+}
+.del-btn {
+  width: 100%;
+  background: none;
+  border: 1px solid rgba(196,98,106,0.35);
+  color: var(--rosa-ant);
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  margin: 16px 0;
+}
+
+/* ── Stats view ── */
+.stats-view { padding: 16px; }
+.stats-card { background: var(--pergamino); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+.stats-card-title { font-family: 'Lora', serif; font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 12px; }
+.genre-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.genre-name { font-size: 13px; color: var(--text-mid); width: 110px; flex-shrink: 0; }
+.genre-bar-wrap { flex: 1; background: var(--miel); border-radius: 99px; height: 8px; }
+.genre-bar-fill { height: 8px; border-radius: 99px; background: var(--rosa-ant); }
+.genre-count { font-size: 12px; color: var(--text-hint); width: 24px; text-align: right; }
+.score-dist { display: flex; align-items: flex-end; gap: 4px; height: 60px; }
+.score-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.score-bar-wrap { flex: 1; width: 100%; display: flex; align-items: flex-end; }
+.score-bar { width: 100%; border-radius: 4px 4px 0 0; background: var(--rosa-ant); min-height: 2px; transition: height 0.4s; }
+.score-n { font-size: 9px; color: var(--text-hint); }
+.recent-row { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.recent-cover { width: 34px; height: 50px; border-radius: 4px; overflow: hidden; border: 0.5px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.recent-cover img { width: 100%; height: 100%; object-fit: cover; }
+.recent-title { font-size: 13px; font-weight: 500; color: var(--text-main); }
+.recent-auth { font-size: 11px; color: var(--text-soft); }
+.recent-score { font-size: 12px; color: var(--rosa-ant); font-weight: 500; margin-left: auto; }
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: calc(var(--safe-bottom) + 70px);
+  left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--espresso);
+  color: var(--crema);
+  font-size: 13px;
+  padding: 10px 20px;
+  border-radius: 99px;
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 9999;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+</style>
+</head>
+<body>
+
+<div class="status-bar-fill"></div>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="topbar-logo">Biblio<span>track</span></div>
+  <div class="topbar-actions">
+    <button class="icon-btn" onclick="openSearch()" aria-label="Buscar libros">
+      <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- Stats strip -->
+<div class="stats-strip" id="stats-strip">
+  <div class="stat-pill"><div class="stat-num" id="s-total">0</div><div class="stat-lbl">total</div></div>
+  <div class="stat-pill"><div class="stat-num" id="s-leyendo">0</div><div class="stat-lbl">leyendo</div></div>
+  <div class="stat-pill"><div class="stat-num" id="s-leidos">0</div><div class="stat-lbl">leídos</div></div>
+  <div class="stat-pill"><div class="stat-num" id="s-paginas">0</div><div class="stat-lbl">páginas</div></div>
+</div>
+
+<!-- Tab bar -->
+<div class="tabbar" id="main-tabs">
+  <div class="tab active" data-filter="todos" onclick="setTab(this)">Todos</div>
+  <div class="tab" data-filter="leyendo" onclick="setTab(this)">Leyendo</div>
+  <div class="tab" data-filter="leido" onclick="setTab(this)">Leídos</div>
+  <div class="tab" data-filter="pendiente" onclick="setTab(this)">Pendientes</div>
+</div>
+
+<!-- Book grid -->
+<div class="content" id="main-content">
+  <div class="book-grid" id="book-grid"></div>
+</div>
+
+<!-- Bottom nav -->
+<div class="bottomnav">
+  <button class="nav-btn active" id="nav-biblioteca" onclick="switchNav('biblioteca')">
+    <svg viewBox="0 0 24 24"><path d="M4 19V6.2C4 5.08 4.9 4.2 6 4.2h12c1.1 0 2 .88 2 2V19"/><rect x="4" y="17" width="16" height="2" rx="1"/><path d="M9 4v13M15 4v13"/></svg>
+    Biblioteca
+  </button>
+  <button class="nav-btn" id="nav-estadisticas" onclick="switchNav('estadisticas')">
+    <svg viewBox="0 0 24 24"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
+    Estadísticas
+  </button>
+</div>
+
+<!-- Search overlay -->
+<div class="search-overlay" id="search-overlay">
+  <div class="search-header">
+    <div class="search-input-wrap">
+      <svg viewBox="0 0 24 24" width="16" height="16" stroke="rgba(250,243,236,0.5)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-input" id="search-input" placeholder="Título, autor o ISBN..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <button class="search-cancel" onclick="closeSearch()">Cancelar</button>
+  </div>
+  <div class="search-results" id="search-results">
+    <div class="search-hint">Busca por título, autor o ISBN.<br>Usamos la base de datos de Open Library.</div>
+  </div>
+</div>
+
+<!-- Detail overlay -->
+<div class="detail-overlay" id="detail-overlay">
+  <div class="detail-header">
+    <button class="back-btn" onclick="closeDetail()">
+      <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="detail-header-title" id="detail-header-title">—</div>
+  </div>
+  <div class="detail-body" id="detail-body"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Storage ──
+const DB_KEY = 'bibliotrack_books_v2';
+let books = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+let currentFilter = 'todos';
+let currentDetailId = null;
+let searchTimer = null;
+
+function save() { localStorage.setItem(DB_KEY, JSON.stringify(books)); }
+
+function getById(id) { return books.find(b => b.id === id); }
+
+// ── Status helpers ──
+const STATUS_COLORS = { leyendo:'#378ADD', leido:'#639922', pendiente:'#BA7517', abandonado:'#E24B4A' };
+const STATUS_LABELS = { leyendo:'Leyendo', leido:'Leído', pendiente:'Pendiente', abandonado:'Abandonado' };
+const COVER_COLORS = ['#3D1F0D','#6B3520','#9B3340','#A0612F','#0C447C','#27500A','#633806','#442B6B'];
+
+function coverColor(id) {
+  let h = 0; for (let c of String(id)) h = (h*31 + c.charCodeAt(0)) & 0xffffffff;
+  return COVER_COLORS[Math.abs(h) % COVER_COLORS.length];
+}
+
+// ── Stats ──
+function updateStats() {
+  const total = books.length;
+  const leyendo = books.filter(b=>b.status==='leyendo').length;
+  const leidos = books.filter(b=>b.status==='leido').length;
+  const paginas = books.reduce((s,b)=>s+(b.pagesRead||0),0);
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-leyendo').textContent = leyendo;
+  document.getElementById('s-leidos').textContent = leidos;
+  document.getElementById('s-paginas').textContent = paginas >= 1000 ? (paginas/1000).toFixed(1)+'k' : paginas;
+}
+
+// ── Render grid ──
+function renderGrid() {
+  updateStats();
+  const grid = document.getElementById('book-grid');
+  let filtered = currentFilter === 'todos' ? books : books.filter(b=>b.status===currentFilter);
+  if (!filtered.length) {
+    grid.innerHTML = '';
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.style.gridColumn = '1/-1';
+    const msgs = {
+      todos: ['📚','Tu biblioteca está vacía','Busca un libro con la lupa para empezar tu colección.'],
+      leyendo: ['📖','Nada en progreso','Agrega un libro y márcalo como "Leyendo".'],
+      leido: ['✅','Sin libros terminados','Cuando termines un libro aparecerá aquí.'],
+      pendiente: ['🔖','Lista de deseos vacía','Guarda libros que quieres leer en el futuro.']
+    };
+    const m = msgs[currentFilter] || msgs.todos;
+    empty.innerHTML = `<span class="empty-icon">${m[0]}</span><div class="empty-title">${m[1]}</div><div class="empty-sub">${m[2]}</div>`;
+    grid.appendChild(empty);
+    return;
+  }
+  grid.innerHTML = filtered.map(b => {
+    const pct = b.pages ? Math.round((b.pagesRead||0)/b.pages*100) : 0;
+    const color = coverColor(b.id);
+    const scoreHtml = b.score ? `<div class="score-pip">★ ${b.score}</div>` : '';
+    const statusDot = `<div class="status-pip" style="background:${STATUS_COLORS[b.status]||'#888'}"></div>`;
+    const progressHtml = b.status==='leyendo' && b.pages
+      ? `<div class="progress-mini" style="background:rgba(0,0,0,0.2)"><div class="progress-mini-fill" style="width:${pct}%;background:${STATUS_COLORS.leyendo}"></div></div>` : '';
+    const coverImg = b.cover ? `<img src="${b.cover}" alt="" loading="lazy" onerror="this.style.display='none'">` : '';
+    const textColor = '#FAF3EC';
+    return `<div class="book-card" onclick="openDetail('${b.id}')">
+      <div class="book-thumb" style="background:${color}">
+        ${coverImg}
+        <div class="book-thumb-fallback"><div class="book-thumb-title" style="color:${textColor}">${b.title}</div></div>
+        ${statusDot}
+        ${scoreHtml}
+        ${progressHtml}
+      </div>
+      <div class="book-name">${b.title}</div>
+      <div class="book-auth">${b.author||''}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Tabs ──
+function setTab(el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  currentFilter = el.dataset.filter;
+  renderGrid();
+}
+
+// ── Bottom nav ──
+function switchNav(page) {
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('nav-'+page).classList.add('active');
+  if (page === 'biblioteca') {
+    document.getElementById('main-content').innerHTML = '<div class="book-grid" id="book-grid"></div>';
+    document.getElementById('main-tabs').style.display = 'flex';
+    document.getElementById('stats-strip').style.display = 'flex';
+    renderGrid();
+  } else {
+    document.getElementById('main-tabs').style.display = 'none';
+    document.getElementById('stats-strip').style.display = 'none';
+    renderStats();
+  }
+}
+
+function renderStats() {
+  const mc = document.getElementById('main-content');
+  const read = books.filter(b=>b.status==='leido');
+  const avgScore = read.filter(b=>b.score).length
+    ? (read.filter(b=>b.score).reduce((s,b)=>s+b.score,0)/read.filter(b=>b.score).length).toFixed(1) : '—';
+  const totalPages = books.reduce((s,b)=>s+(b.pagesRead||0),0);
+
+  const genreMap = {};
+  books.forEach(b=>{ if(b.genre){(b.genre.split(',')[0]||'').trim().split('/').forEach(g=>{ const k=g.trim(); if(k) genreMap[k]=(genreMap[k]||0)+1; })}});
+  const topGenres = Object.entries(genreMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxG = topGenres[0]?.[1] || 1;
+
+  const scoreDist = Array(10).fill(0);
+  books.filter(b=>b.score).forEach(b=>scoreDist[b.score-1]++);
+  const maxS = Math.max(...scoreDist,1);
+
+  const recentRead = [...read].filter(b=>b.finishedAt).sort((a,b)=>b.finishedAt-a.finishedAt).slice(0,5);
+
+  mc.innerHTML = `<div class="stats-view">
+    <div class="stats-card">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><div style="font-size:28px;font-family:'Lora',serif;font-weight:600;color:var(--text-main)">${books.length}</div><div style="font-size:11px;color:var(--text-hint);margin-top:2px">libros en total</div></div>
+        <div><div style="font-size:28px;font-family:'Lora',serif;font-weight:600;color:var(--rosa-ant)">${avgScore}</div><div style="font-size:11px;color:var(--text-hint);margin-top:2px">puntuación media</div></div>
+        <div><div style="font-size:28px;font-family:'Lora',serif;font-weight:600;color:var(--text-main)">${totalPages.toLocaleString()}</div><div style="font-size:11px;color:var(--text-hint);margin-top:2px">páginas leídas</div></div>
+        <div><div style="font-size:28px;font-family:'Lora',serif;font-weight:600;color:var(--cedro)">${read.length}</div><div style="font-size:11px;color:var(--text-hint);margin-top:2px">libros terminados</div></div>
+      </div>
+    </div>
+    ${topGenres.length ? `<div class="stats-card">
+      <div class="stats-card-title">Géneros favoritos</div>
+      ${topGenres.map(([g,n])=>`<div class="genre-row">
+        <div class="genre-name">${g}</div>
+        <div class="genre-bar-wrap"><div class="genre-bar-fill" style="width:${Math.round(n/maxG*100)}%"></div></div>
+        <div class="genre-count">${n}</div>
+      </div>`).join('')}
+    </div>` : ''}
+    ${books.filter(b=>b.score).length ? `<div class="stats-card">
+      <div class="stats-card-title">Distribución de puntuaciones</div>
+      <div class="score-dist">
+        ${scoreDist.map((n,i)=>`<div class="score-col">
+          <div class="score-bar-wrap"><div class="score-bar" style="height:${Math.round(n/maxS*50)+4}px;opacity:${n?1:0.2}"></div></div>
+          <div class="score-n">${i+1}</div>
+        </div>`).join('')}
+      </div>
+    </div>` : ''}
+    ${recentRead.length ? `<div class="stats-card">
+      <div class="stats-card-title">Leídos recientemente</div>
+      ${recentRead.map(b=>{
+        const color = coverColor(b.id);
+        const img = b.cover ? `<img src="${b.cover}" alt="" onerror="this.style.display='none'">` : '📖';
+        return `<div class="recent-row">
+          <div class="recent-cover" style="background:${color}">${img}</div>
+          <div><div class="recent-title">${b.title}</div><div class="recent-auth">${b.author||''}</div></div>
+          ${b.score ? `<div class="recent-score">★ ${b.score}</div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>` : ''}
+    ${!books.length ? `<div class="empty"><span class="empty-icon">📊</span><div class="empty-title">Sin datos aún</div><div class="empty-sub">Agrega libros a tu biblioteca para ver estadísticas.</div></div>` : ''}
+  </div>`;
+}
+
+// ── Search ──
+function openSearch() {
+  document.getElementById('search-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('search-input').focus(), 350);
+}
+function closeSearch() {
+  document.getElementById('search-overlay').classList.remove('open');
+  document.getElementById('search-input').value = '';
+  document.getElementById('search-results').innerHTML = '<div class="search-hint">Busca por título, autor o ISBN.<br>Usamos la base de datos de Open Library.</div>';
+  clearTimeout(searchTimer);
+}
+
+document.getElementById('search-input').addEventListener('input', function() {
+  clearTimeout(searchTimer);
+  const q = this.value.trim();
+  if (!q) { document.getElementById('search-results').innerHTML = '<div class="search-hint">Busca por título, autor o ISBN.<br>Usamos la base de datos de Open Library.</div>'; return; }
+  document.getElementById('search-results').innerHTML = '<div class="loading-dots">Buscando...</div>';
+  searchTimer = setTimeout(()=>doSearch(q), 500);
+});
+
+async function doSearch(q) {
+  try {
+    const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&fields=key,title,author_name,first_publish_year,number_of_pages_median,cover_i,subject&limit=15`;
+    const r = await fetch(url);
+    const data = await r.json();
+    renderSearchResults(data.docs||[]);
+  } catch(e) {
+    document.getElementById('search-results').innerHTML = '<div class="search-hint">No se pudo conectar. Revisa tu conexión a internet.</div>';
+  }
+}
+
+function renderSearchResults(docs) {
+  const container = document.getElementById('search-results');
+  if (!docs.length) { container.innerHTML = '<div class="search-hint">Sin resultados. Intenta con otro término.</div>'; return; }
+  container.innerHTML = docs.map(d => {
+    const title = d.title||'Sin título';
+    const author = (d.author_name||[]).slice(0,2).join(', ')||'Autor desconocido';
+    const year = d.first_publish_year||'';
+    const pages = d.number_of_pages_median||'';
+    const coverId = d.cover_i;
+    const coverUrl = coverId ? `https://covers.openlibrary.org/b/id/${coverId}-M.jpg` : null;
+    const olKey = d.key||'';
+    const genre = (d.subject||[]).slice(0,2).join(', '');
+    const isAdded = books.some(b=>b.olKey===olKey && olKey);
+    const coverHtml = coverUrl ? `<img src="${coverUrl}" alt="" onerror="this.style.display='none'">` : '📖';
+    const meta = [year, pages?pages+' pág':''].filter(Boolean).join(' · ');
+    return `<div class="search-result-item" onclick="addBook('${encodeURIComponent(JSON.stringify({title,author,year,pages,coverId,olKey,genre}))}', this)">
+      <div class="search-result-cover">${coverHtml}</div>
+      <div class="search-result-info">
+        <div class="search-result-title">${title}</div>
+        <div class="search-result-author">${author}</div>
+        <div class="search-result-meta">${meta}</div>
+      </div>
+      <button class="search-add-btn ${isAdded?'added':''}" onclick="event.stopPropagation();addBook('${encodeURIComponent(JSON.stringify({title,author,year,pages,coverId,olKey,genre}))}', this.parentElement)">${isAdded?'Agregado':'+ Agregar'}</button>
+    </div>`;
+  }).join('');
+}
+
+function addBook(encoded, rowEl) {
+  const d = JSON.parse(decodeURIComponent(encoded));
+  if (d.olKey && books.some(b=>b.olKey===d.olKey)) { showToast('Ya está en tu biblioteca'); return; }
+  const coverUrl = d.coverId ? `https://covers.openlibrary.org/b/id/${d.coverId}-M.jpg` : null;
+  const book = {
+    id: Date.now().toString(36)+Math.random().toString(36).slice(2,5),
+    title: d.title,
+    author: d.author,
+    year: d.year,
+    pages: parseInt(d.pages)||null,
+    pagesRead: 0,
+    cover: coverUrl,
+    olKey: d.olKey,
+    genre: d.genre,
+    status: 'pendiente',
+    score: null,
+    notes: '',
+    addedAt: Date.now(),
+    finishedAt: null
+  };
+  books.unshift(book);
+  save();
+  renderGrid();
+  updateStats();
+  const btn = rowEl.querySelector('.search-add-btn');
+  if (btn) { btn.textContent = 'Agregado'; btn.classList.add('added'); }
+  showToast('📚 ' + book.title + ' agregado');
+}
+
+// ── Detail ──
+function openDetail(id) {
+  const b = getById(id);
+  if (!b) return;
+  currentDetailId = id;
+  document.getElementById('detail-header-title').textContent = b.title;
+  renderDetailBody(b);
+  document.getElementById('detail-overlay').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detail-overlay').classList.remove('open');
+  currentDetailId = null;
+  renderGrid();
+  updateStats();
+}
+
+function renderDetailBody(b) {
+  const pct = b.pages ? Math.round((b.pagesRead||0)/b.pages*100) : 0;
+  const color = coverColor(b.id);
+  const coverHtml = b.cover ? `<img src="${b.cover}" alt="" onerror="this.style.display='none'">` : '📖';
+  const starsHtml = Array.from({length:10},(_,i)=>
+    `<span class="star ${b.score&&i<b.score?'on':''}" onclick="setScore(${i+1})">★</span>`).join('');
+  const chips = ['leyendo','leido','pendiente','abandonado'].map(s=>
+    `<span class="s-chip ${b.status===s?'sel-'+s:''}" onclick="setStatus('${s}',this)">${STATUS_LABELS[s]}</span>`).join('');
+  const metaTags = [b.year?b.year+'':'', b.pages?b.pages+' páginas':'', b.genre||''].filter(Boolean)
+    .map(t=>`<span class="meta-tag">${t}</span>`).join('');
+
+  const progressHtml = b.pages ? `
+    <div class="progress-section">
+      <div class="progress-nums">
+        <div><span class="progress-big">${b.pagesRead||0}</span> <span style="font-size:13px;color:var(--text-hint)">/ ${b.pages} pág.</span></div>
+        <div class="progress-pct">${pct}%</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:${pct}%"></div></div>
+      <div class="progress-rest">${Math.max(0,(b.pages||0)-(b.pagesRead||0))} páginas restantes</div>
+      <div class="page-input-row">
+        <input class="page-input" id="page-input" type="number" min="0" max="${b.pages}" value="${b.pagesRead||0}" placeholder="Página actual">
+        <button class="page-save-btn" onclick="savePage()">Actualizar</button>
+      </div>
+    </div>` : `<div style="font-size:13px;color:var(--text-hint);font-style:italic">Número de páginas desconocido.</div>`;
+
+  document.getElementById('detail-body').innerHTML = `
+    <div class="detail-hero">
+      <div class="detail-cover-wrap" style="background:${color}">${coverHtml}</div>
+      <div class="detail-info">
+        <div class="detail-title">${b.title}</div>
+        <div class="detail-author">${b.author||'Autor desconocido'}</div>
+        <div class="detail-metas">${metaTags}</div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="section-lbl">Estado</div>
+      <div class="status-chips">${chips}</div>
+    </div>
+    <div class="detail-section">
+      <div class="section-lbl">Mi puntuación</div>
+      <div class="stars-row">${starsHtml}<span class="star-label" id="star-label">${b.score?b.score+'/10':'Sin puntuación'}</span></div>
+    </div>
+    <div class="detail-section">
+      <div class="section-lbl">Progreso de lectura</div>
+      ${progressHtml}
+    </div>
+    <div class="detail-section">
+      <div class="section-lbl">Mis notas</div>
+      <textarea class="notes-input" id="notes-input" placeholder="Escribe tus reflexiones, citas favoritas o notas...">${b.notes||''}</textarea>
+      <div class="notes-save" onclick="saveNotes()">Guardar notas ✓</div>
+    </div>
+    <div style="padding:0 16px 16px">
+      <button class="del-btn" onclick="deleteBook()">Eliminar de mi biblioteca</button>
+    </div>
+  `;
+}
+
+function setStatus(status, el) {
+  const b = getById(currentDetailId); if (!b) return;
+  b.status = status;
+  if (status === 'leido') { b.finishedAt = Date.now(); if (b.pages) b.pagesRead = b.pages; }
+  save();
+  document.querySelectorAll('.s-chip').forEach(c=>{ c.className='s-chip'; });
+  el.className = 's-chip sel-'+status;
+  if (status === 'leido' && b.pages) {
+    const fill = document.getElementById('prog-fill');
+    if (fill) fill.style.width = '100%';
+    const input = document.getElementById('page-input');
+    if (input) input.value = b.pages;
+  }
+  showToast('Estado actualizado');
+}
+
+function setScore(n) {
+  const b = getById(currentDetailId); if (!b) return;
+  b.score = n; save();
+  document.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('on',i<n));
+  document.getElementById('star-label').textContent = n+'/10';
+}
+
+function savePage() {
+  const b = getById(currentDetailId); if (!b) return;
+  const v = parseInt(document.getElementById('page-input').value)||0;
+  b.pagesRead = Math.min(v, b.pages||v);
+  if (b.pages && b.pagesRead >= b.pages) { b.status='leido'; b.finishedAt=Date.now(); }
+  save();
+  const pct = b.pages ? Math.round(b.pagesRead/b.pages*100) : 0;
+  const fill = document.getElementById('prog-fill');
+  if (fill) fill.style.width = pct+'%';
+  if (b.pages && b.pagesRead >= b.pages) renderDetailBody(b);
+  showToast('Progreso guardado');
+}
+
+function saveNotes() {
+  const b = getById(currentDetailId); if (!b) return;
+  b.notes = document.getElementById('notes-input').value;
+  save();
+  showToast('Notas guardadas ✓');
+}
+
+function deleteBook() {
+  if (!confirm('¿Eliminar este libro de tu biblioteca?')) return;
+  books = books.filter(b=>b.id!==currentDetailId);
+  save();
+  closeDetail();
+  showToast('Libro eliminado');
+}
+
+// ── Toast ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+// ── Init ──
+renderGrid();
+updateStats();
+</script>
+</body>
+</html>
